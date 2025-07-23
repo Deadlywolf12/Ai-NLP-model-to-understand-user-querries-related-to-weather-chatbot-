@@ -1,6 +1,8 @@
+import random
 from flask import Flask, request, jsonify
 import torch
 from training_data import TrainingData as td
+from accelerate import Accelerator
 from torch.utils.data import Dataset
 from transformers import (
     AutoTokenizer,
@@ -9,6 +11,8 @@ from transformers import (
     TrainingArguments
 )
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+acc = Accelerator() if torch.cuda.is_available() else None
 # ------------ Data ------------
 data = td.data
 
@@ -51,7 +55,7 @@ def predict_intent(text):
      # Debug: Print probabilities
     print(f"Predicted class: {predicted_class} ({id2label[predicted_class]})")
     print(f"Confidence: {confidence:.4f}")
-    print(f"All probabilities: {probs.tolist()}")
+    
     return id2label[predicted_class], confidence
 
 @app.route("/chatbot", methods=["POST"])
@@ -63,10 +67,27 @@ def chatbot():
         return jsonify({"reply": "Sorry, I didn't understand that."})
 
     responses = {
-        "greeting": "Hey there!",
-        "farewell": "Goodbye!",
+        "greeting": "Hey there!, how are you?",
+        "farewell": "Goodbye! see you",
         "small_talk": "I'm doing great, thanks for asking!",
-        "weather_query": "Let me check the weather for you..."
+        "weather_query": "Let me check the weather for you...",
+        "agree_query": "Good to know you got it! want to ask anything else?",
+        "rain_query": "Look like no raining and no chance of rain...",
+        "temp_query": "letme get temperature...",
+        "location_specific_weather_query": "letme get weather of another city...",
+        "clothing_advice": "letme get clothing advice...",
+        "humid_query": "letme get humid advice...",
+        "wind_query": "letme get wind advice...",
+        "sun_query": "letme get sun advice...",
+        "air_query": "letme get air advice...",
+        "walk_query": "letme get walk advice...",
+        "cycle_query": "letme get cycle advice...",
+        "outing_query": "letme get outing advice...",
+        "help": "how can i help you?...",
+        "neg_res": "oky i got it , nothing u need",
+        "mood_good": "happy to know you are in good mood",
+        "mood_bad": "sadend to know you are in bad mood",
+        "confused": "im sorry it made you confused dumbhead"
     }
 
     reply = responses.get(intent, "Hmm, I don't know how to respond.")
@@ -76,7 +97,7 @@ def chatbot():
 if __name__ == "__main__":
     # Check if CUDA is available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    
 
     dataset = IntentDataset(encodings, labels)
 
@@ -90,11 +111,13 @@ if __name__ == "__main__":
     training_args = TrainingArguments(
         output_dir="./results",
         num_train_epochs=15,
-        per_device_train_batch_size=8,
+        per_device_train_batch_size=16 if torch.cuda.is_available() else 4,
         learning_rate=3e-5,
+        fp16=torch.cuda.is_available(),
+        dataloader_pin_memory=torch.cuda.is_available(),
         logging_dir="./logs",
         save_strategy="no",
-        report_to="none"  
+        report_to="none"
     )
 
     trainer = Trainer(
@@ -103,7 +126,17 @@ if __name__ == "__main__":
         train_dataset=dataset
     )
 
-    trainer.train()
-    model = model_instance
+    if acc:
+        print("🚀 Training with GPU acceleration")
+        model_instance, trainer = acc.prepare(model_instance, trainer)
+        trainer.train()
+        model = acc.unwrap_model(model_instance)
+    else:
+        print("⏳ Training on CPU")
+        trainer.train()
+        model = model_instance
+
+
+    model.eval()
 
     app.run(host="0.0.0.0", port=5000)
