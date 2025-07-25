@@ -1,4 +1,4 @@
-import random
+
 from flask import Flask, request, jsonify
 import torch
 from training_data import TrainingData as td

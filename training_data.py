@@ -149,7 +149,7 @@ class TrainingData:
         ("agree", "agree_query"),
         ("agreeeee", "agree_query"),
         ("agreed", "agree_query"),
-                ("alright", "agree_query"),
+        ("alright", "agree_query"),
         ("aight", "agree_query"),
         ("okie", "agree_query"),
         ("okie dokie", "agree_query"),
@@ -184,7 +184,7 @@ class TrainingData:
         ("idk what you mean", "confused"),
         ("wut", "confused"),
         ("confused", "confused"),
-        ("i’m confused", "confused"),
+        ("i'm confused", "confused"),
         ("bruh what", "confused"),
         ("bro what r u saying", "confused"),
         ("what does that mean?", "confused"),
@@ -772,6 +772,6 @@ class TrainingData:
         ("can't focus, bad mood", "mood_bad"),
         ("really down right now", "mood_bad"),
         ("don't feel good mentally", "mood_bad"),
-        ("just not okay", "mood_bad"),
+        ("just not okay", "mood_bad")
 
     ]
