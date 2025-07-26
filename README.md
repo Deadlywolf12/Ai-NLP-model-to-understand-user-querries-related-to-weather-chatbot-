@@ -73,8 +73,8 @@ Below are example screenshots/results generated from this AI model's predictions
 
 You can also use this model directly via Hugging Face — no setup needed!
 
-👉 [**Try it on Hugging Face**](Deadlywolf12/Weather_chatbot_Ai_Model)  
-(Replace with your actual link)
+👉 [**Try it on Hugging Face**](https://huggingface.co/Deadlywolf12/Weather_chatbot_Ai_Model)  
+
 
 Use it via `transformers`:
 
